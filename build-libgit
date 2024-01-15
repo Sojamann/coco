@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -eu
+
+ROOT="$(dirname "$0")"
+
+dest="${1?}"
+version="${2?}"
+
+trap 'docker rm -f libgit' EXIT
+docker run -i --name libgit alpine:3 sh -c "\
+    set -x 
+    apk add cmake gcc build-base python3 git \
+    && git clone --single-branch --branch '$version' https://github.com/libgit2/libgit2.git /tmp/libgit \
+    && mkdir /tmp/libgit/build \
+    && cd /tmp/libgit/build \
+    && cmake -DUSE_SSH=OFF -DUSE_HTTPS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DBUILD_CLI=OFF .. \
+    && cmake --build . \
+"
+docker cp libgit:/tmp/libgit/build/libgit2.a "$dest"
+
+
