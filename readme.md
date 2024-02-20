@@ -1,6 +1,6 @@
 # CONCOM
 Conventional commit tool (read about them
-(here)[https://www.conventionalcommits.org/en/v1.0.0/]).
+[here](https://www.conventionalcommits.org/en/v1.0.0/)).
 
 ## Usage
 
