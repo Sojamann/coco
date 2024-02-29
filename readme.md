@@ -18,27 +18,27 @@ concom validate --file "$1"
 
 ### Next Version
 concom determines the semantic version of the next release by looking at the
-existing tags and the since made commits. To do this, there must be at least
+existing reachable tags and the since made commits. To do this, there must be at least
 one tag already, as there is no way to guess the maturity of the project.
 Given that your project is still in the 'initial development' phase (major
 version 0) breaking changes won't increment the major version
 yet. You must therefore manually tag it as 1.0.0 when you are ready.
 
 ```bash
-# making a new tag
-git tag "$(concom next-version)"
+# creating a new tag
+git tag "v$(concom next-version)"
 ```
 
 example
 ```bash
-# current tags (tags can be prefixed with 'v' as well)
+# current tags (tags CAN be prefixed with 'v')
 $ git tag
-1.0.0
-1.0.1
+v1.0.0
+v1.0.1
 v1.0.2
 
 # since made commits
-$ git log --oneline 1.0.1..HEAD
+$ git log --oneline v1.0.1..HEAD
 <sha> feat(X): some feature around X
 <sha> fix(Y): damn Y was broken
 
@@ -52,7 +52,7 @@ The above example assume that tags were made on *main* and *HEAD* is also pointi
 at it. But the tags that are used for evaulation MUST be reachable from *HEAD*. Example:
 
 ```
-     1.0.0                 2.0.0
+    v1.0.0                v2.0.0
 ----(feat)---(breaking)---(feat)---    main 
      \
       \                ?
@@ -87,6 +87,13 @@ zig build -Dlibgit2-object=/path/to/libgit2.a -Dlibgit2-version v1.7.2
 # build concom using the script 'build-libgit2' to build
 # libgit2 (the build will be cached but requires docker to be installed)
 zig build
+```
+
+#### Releases
+
+```bash
+# built using
+zig build -Dtarget=x86_64-linux-musl -Doptimize=ReleaseSmall
 ```
 
 ## TODO
