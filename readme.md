@@ -31,10 +31,11 @@ git tag "$(concom next-version)"
 
 example
 ```bash
-# current tags
+# current tags (tags can be prefixed with 'v' as well)
 $ git tag
 1.0.0
 1.0.1
+v1.0.2
 
 # since made commits
 $ git log --oneline 1.0.1..HEAD
@@ -66,16 +67,6 @@ git tag "$(comcon next-version)-dev+$(git rev-parse --short HEAD)"
 ```
 
 All non release tags won't play a role in the calculation of the next-version.
-
-#### About v\*.\*.\*
-v1.1.1 is not a valid semantic version (as mentioned [here](https://semver.org/#is-v123-a-semantic-version))
-but if you want to determine the next version automatically anyways one can do:
-
-```bash
-git tag | cut -c 2- | concom next-version --from-stdin
-```
-
-Note: the tags provided this way will be checked for them being reachable from HEAD as well.
 
 ### Development
 

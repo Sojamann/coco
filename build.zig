@@ -12,7 +12,7 @@ pub fn build(b: *std.Build) void {
         "what version of libgit2 to use",
     ) orelse "v1.7.2";
 
-    var libgit_object: std.build.LazyPath = undefined;
+    var libgit_object: std.Build.LazyPath = undefined;
     if (libgit_object_option) |path| {
         b.getInstallStep().dependOn(&b.addInstallFile(.{ .path = path }, "libgit2.a").step);
         libgit_object = .{ .path = path };

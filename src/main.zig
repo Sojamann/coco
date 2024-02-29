@@ -31,7 +31,7 @@ fn usage(ally: std.mem.Allocator) noreturn {
         \\  "no arguments"
         \\      read the message from stdin
         \\
-        \\next-version [-i|--ignore-invalid-conventional-commits] [--from-stdin]
+        \\next-version [-i|--ignore-invalid-conventional-commits]
         \\  
         \\  Prints what the next semantic version, given the since made
         \\  commits, will be.
@@ -39,10 +39,6 @@ fn usage(ally: std.mem.Allocator) noreturn {
         \\  -i, --ignore-invalid-conventional-commits 
         \\      ignore commits that don't conform the conventional commit
         \\      standards
-        \\
-        \\  --from-stdin
-        \\      read the tags to evaluate from stdin instead of looking up
-        \\      the tags in the git repository
     ;
     const prog_name = std.fs.selfExePathAlloc(ally) catch @panic("OOM");
     defer ally.free(prog_name);

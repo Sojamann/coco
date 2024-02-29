@@ -12,7 +12,6 @@ const SemVer = std.SemanticVersion;
 // holds the parsed arguments for this command
 const Args = struct {
     ignore_invalid_conventional_commits: bool = false,
-    from_stdin: bool = false,
 };
 
 // parse cli arguments into the Args struct
@@ -29,11 +28,6 @@ fn parse_args(
             args.ignore_invalid_conventional_commits = true;
             continue;
         }
-        if (std.mem.eql(u8, arg, "--from-stdin")) {
-            args.from_stdin = true;
-            continue;
-        }
-
         util.log("the provided flag '{s}' is not known!\n\n", .{arg});
         return error.BadArg;
     }
@@ -42,19 +36,9 @@ fn parse_args(
 
 // return all tags... BufSet is used since BufList does not exist.
 // The hashing overhead is just not that relevant for this type of cli app.
-fn getTags(ally: std.mem.Allocator, repo: git.Repo, from_stdin: bool) !std.BufSet {
+fn getTags(ally: std.mem.Allocator, repo: git.Repo) !std.BufSet {
     var tags = std.BufSet.init(ally);
     errdefer tags.deinit();
-
-    if (from_stdin) {
-        var buff: [1024 * 2]u8 = undefined;
-        const reader = std.io.getStdIn().reader();
-
-        while (try reader.readUntilDelimiterOrEof(&buff, '\n')) |line| {
-            tags.insert(line) catch @panic("OOM");
-        }
-        return tags;
-    }
 
     const taglist = try repo.getTags();
     defer taglist.deinit();
@@ -67,6 +51,8 @@ fn getTags(ally: std.mem.Allocator, repo: git.Repo, from_stdin: bool) !std.BufSe
 
 // returns the latest release in a git repository
 fn getLatestReachableRelease(repo: *const git.Repo, tags: *const std.BufSet) ![:0]u8 {
+    var buff: [MAX_TAG_LEN]u8 = undefined;
+    var largestTag: ?[]u8 = undefined;
     var largest: ?std.SemanticVersion = null;
 
     var iter = tags.iterator();
@@ -75,7 +61,7 @@ fn getLatestReachableRelease(repo: *const git.Repo, tags: *const std.BufSet) ![:
             util.die("The tag '{s}' is too long", .{item});
         };
 
-        const ver = SemVer.parse(tag) catch {
+        const ver = SemVer.parse(std.mem.trimLeft(u8, tag, "v")) catch {
             util.die("The tag {s} is not a valid semantic version!", .{tag});
         };
         if (ver.pre != null or ver.build != null) continue;
@@ -87,14 +73,15 @@ fn getLatestReachableRelease(repo: *const git.Repo, tags: *const std.BufSet) ![:
         const current = largest orelse SemVer{ .major = 0, .minor = 0, .patch = 0 };
         if (SemVer.order(current, ver) == .lt) {
             largest = ver;
+            largestTag = std.fmt.bufPrintZ(&buff, "{s}", .{tag}) catch unreachable;
         }
     }
 
-    if (largest == null) {
+    if (largest == null or largestTag == null) {
         util.die("There is no reachable release yet! The first one you need to name yourself!", .{});
     }
 
-    return try std.fmt.bufPrintZ(&TAG_BUFF, "{}", .{largest.?});
+    return try std.fmt.bufPrintZ(&TAG_BUFF, "{s}", .{largestTag.?});
 }
 
 fn determineNextVersion(
@@ -146,7 +133,7 @@ pub fn cmd_next_version(
 ) !void {
     const args = try parse_args(iter);
 
-    const tags = try getTags(ally, repo, args.from_stdin);
+    const tags = try getTags(ally, repo);
     const latest_release = try getLatestReachableRelease(&repo, &tags);
 
     const commit = try repo.getCommit(latest_release);
@@ -166,7 +153,7 @@ pub fn cmd_next_version(
 
     const next = try determineNextVersion(
         ally,
-        SemVer.parse(latest_release) catch unreachable,
+        SemVer.parse(std.mem.trimLeft(u8, latest_release, "v")) catch unreachable,
         inbetween,
         args.ignore_invalid_conventional_commits,
     );
