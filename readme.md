@@ -1,4 +1,4 @@
-# CONCOM
+# CoCo
 Conventional commit tool (read about them
 [here](https://www.conventionalcommits.org/en/v1.0.0/)).
 
@@ -7,17 +7,17 @@ Conventional commit tool (read about them
 ### Validate
 ```bash
 # validate a git reference (a commitish)
-concom validate --ref HEAD
+coco validate --ref HEAD
 
 # validate a msg provided on stdin
-git show -s --format=%B HEAD | concom validate
+git show -s --format=%B HEAD | coco validate
 
 # validate a msg from file ... useful for e.g. .git/hooks/pre-commit
-concom validate --file "$1"
+coco validate --file "$1"
 ```
 
 ### Next Version
-concom determines the semantic version of the next release by looking at the
+coco determines the semantic version of the next release by looking at the
 existing reachable tags and the since made commits. To do this, there must be at least
 one tag already, as there is no way to guess the maturity of the project.
 Given that your project is still in the 'initial development' phase (major
@@ -26,7 +26,7 @@ yet. You must therefore manually tag it as 1.0.0 when you are ready.
 
 ```bash
 # creating a new tag
-git tag "v$(concom next-version)"
+git tag "v$(coco next-version)"
 ```
 
 example
@@ -42,7 +42,7 @@ $ git log --oneline v1.0.1..HEAD
 <sha> feat(X): some feature around X
 <sha> fix(Y): damn Y was broken
 
-$ concom next-version
+$ coco next-version
 1.1.0
 ```
 
@@ -63,7 +63,7 @@ perform a dev tag on that branch one can therefore simply do:
 
 ```bash
 # create a tag of format: <Major>.<Minor>.<Patch>-dev+<Short-Sha>
-git tag "$(comcon next-version)-dev+$(git rev-parse --short HEAD)"
+git tag "$(coco next-version)-dev+$(git rev-parse --short HEAD)"
 ```
 
 All non release tags won't play a role in the calculation of the next-version.
@@ -81,10 +81,10 @@ git submodule --update --init --recursive --filter=tree:0
 #### Building
 
 ```bash
-# build concom with libgit2 pre-built as static library
+# build coco with libgit2 pre-built as static library
 zig build -Dlibgit2-object=/path/to/libgit2.a -Dlibgit2-version v1.7.2
 
-# build concom using the script 'build-libgit2' to build
+# build coco using the script 'build-libgit2' to build
 # libgit2 (the build will be cached but requires docker to be installed)
 zig build
 ```
